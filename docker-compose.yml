@@ -1,0 +1,35 @@
+volumes:
+  pg_dusk:
+
+services:
+  dusk_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: dusk_db
+
+    volumes:
+      - pg_dusk:/var/lib/postgresql/data
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+
+  app:
+    depends_on:
+      - dusk_db
+
+    build: .
+
+    restart: always
+
+    ports:
+      - "8080:8080"
+
+
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      JAVA_OPTS: 'Xmx512m'
+
