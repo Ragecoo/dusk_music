@@ -20,7 +20,5 @@ public class RegisterRequest {
     @Schema(example = "StrongP@ssw0rd")
     private String password;
 
-    @NotNull  @Size(min = 8, max = 64)
-    @Schema(example = "StrongP@ssw0rd")
-    private String confirmPassword;
+
 }

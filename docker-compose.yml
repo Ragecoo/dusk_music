@@ -5,10 +5,12 @@ services:
   dusk_db:
     image: postgres
     restart: always
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: dusk_db
+      POSTGRES_DB: ${DB_NAME}
 
     volumes:
       - pg_dusk:/var/lib/postgresql/data
@@ -28,8 +30,7 @@ services:
     ports:
       - "8080:8080"
 
+    env_file:
+      - .env
 
-    environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      JAVA_OPTS: 'Xmx512m'
 
