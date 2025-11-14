@@ -15,9 +15,7 @@ import io.github.ragecoo.dusk_music.repository.UserRepository;
 import io.github.ragecoo.dusk_music.security.jwt.JwtService;
 import io.github.ragecoo.dusk_music.service.AuthService;
 import lombok.AllArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,14 +84,17 @@ public class AuthServiceImpl implements AuthService {
         String id = request.getUsernameOrEmail().trim();
         String rawPassword = request.getPassword();
 
-
-
-
+        // Находим пользователя по email или username
         Optional<User> byEmail = userRepository.findByEmailIgnoreCase(id);
         User u = byEmail.orElseGet(() ->
                 userRepository.findByUsername(id)
                         .orElseThrow(() -> new BadCredentialsException("Invalid credentials"))
         );
+
+        // Проверяем пароль
+        if (!passwordEncoder.matches(rawPassword, u.getPassword())) {
+            throw new BadCredentialsException("Invalid credentials");
+        }
 
         JwtAuthDto jwt= jwtService.generateAuthToken(u.getUsername());
         String access = jwt.getAccessToken();

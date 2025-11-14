@@ -8,7 +8,6 @@ import io.github.ragecoo.dusk_music.model.User;
 import io.github.ragecoo.dusk_music.repository.RefreshTokenRepository;
 import io.github.ragecoo.dusk_music.repository.UserRepository;
 import io.github.ragecoo.dusk_music.service.ProfileService;
-import io.swagger.v3.oas.annotations.servers.Server;
 import lombok.AllArgsConstructor;
 import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.security.authentication.BadCredentialsException;
