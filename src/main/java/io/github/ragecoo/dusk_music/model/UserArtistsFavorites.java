@@ -19,6 +19,7 @@ import java.util.Objects;
 @ToString
 @RequiredArgsConstructor
 @Valid
+@Entity
 @Table(name = "user_artist_favorites",
         uniqueConstraints = @UniqueConstraint(name = "uk_user_artist", columnNames = {"user_id","artist_id"}),
         indexes = {
@@ -34,11 +35,13 @@ public class UserArtistsFavorites {
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id", nullable = false)
         @OnDelete(action = OnDeleteAction.CASCADE)
+        @ToString.Exclude
         private User user;
 
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
         @JoinColumn(name = "artist_id", nullable = false)
         @OnDelete(action = OnDeleteAction.CASCADE)
+        @ToString.Exclude
         private Artist artist;
 
         @Column(name = "created_at", nullable = false)

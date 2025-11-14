@@ -25,3 +25,9 @@ CREATE INDEX IF NOT EXISTS idx_artists_artist_name_trgm
 CREATE INDEX IF NOT EXISTS idx_albums_title_trgm
     ON albums USING GIN (LOWER(title) gin_trgm_ops);
 
+CREATE INDEX IF NOT EXISTS idx_refresh_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_token ON refresh_tokens(token);
+
+CREATE INDEX IF NOT EXISTS idx_uaf_user ON user_artist_favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_uaf_artist ON user_artist_favorites(artist_id);
+

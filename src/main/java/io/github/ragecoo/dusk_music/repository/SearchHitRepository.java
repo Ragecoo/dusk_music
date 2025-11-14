@@ -59,5 +59,5 @@ public interface SearchHitRepository extends JpaRepository<Track, Long> {
         )
         """,
             nativeQuery = true)
-    Page<SearchHit> searchAll(@Param("q") String target, Pageable pageable);
+    Page<SearchHit> searchAll(@Param("target") String target, Pageable pageable);
 }

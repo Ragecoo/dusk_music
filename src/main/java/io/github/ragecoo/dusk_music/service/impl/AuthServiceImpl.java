@@ -48,15 +48,15 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new TakenException("This username is already taken");
         }
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Passwords mismatch");
-        }
+
 
         User u = new User();
         u.setEmail(request.getEmail().trim());
         u.setUsername(request.getUsername().trim());
         u.setPassword(passwordEncoder.encode(request.getPassword()));
         u.setRole(Role.USER);
+        u.setCreatedAt(LocalDateTime.now());
+        u.setSubActive(false);
         u = userRepository.save(u);
 
 
@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenRepository.deleteAllByUserId(u.getId());
         RefreshToken rt = new RefreshToken();
         rt.setUser(u);
-        rt.setToken(refresh);
+        rt.setToken(newRefresh);
         rt.setExpiresAt(LocalDateTime.now().plusDays(30));
 
         refreshTokenRepository.save(rt);

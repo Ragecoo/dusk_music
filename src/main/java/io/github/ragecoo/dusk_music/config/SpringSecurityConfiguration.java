@@ -50,9 +50,10 @@ public class SpringSecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration cfg= new CorsConfiguration();
         //dev
-        cfg.setAllowedOrigins(List.of("*"));
+        cfg.setAllowedOriginPatterns(List.of("*"));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization","Content-type"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setExposedHeaders(List.of("*"));
         //dev
         cfg.setAllowCredentials(false);
         cfg.setMaxAge(3600L);
