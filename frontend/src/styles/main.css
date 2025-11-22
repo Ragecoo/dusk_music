@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+* {
+	font-family: 'Manrope', sans-serif;
+	font-weight: 400;
+}
+
+.gradient-bg {
+	background-color: hsla(12, 0%, 89%, 1);
+	background-image: radial-gradient(
+			at 17% 15%,
+			hsla(221, 44%, 89%, 1) 0px,
+			transparent 50%
+		),
+		radial-gradient(at 9% 9%, hsla(221, 44%, 89%, 1) 0px, transparent 50%),
+		radial-gradient(at 91% 91%, hsla(221, 44%, 89%, 1) 0px, transparent 50%),
+		radial-gradient(at 73% 53%, hsla(221, 44%, 89%, 1) 0px, transparent 50%),
+		radial-gradient(at 52% 21%, hsla(221, 44%, 89%, 1) 0px, transparent 50%),
+		radial-gradient(at 70% 17%, hsla(216, 53%, 73%, 1) 0px, transparent 50%),
+		radial-gradient(at 9% 39%, hsla(216, 53%, 73%, 1) 0px, transparent 50%),
+		radial-gradient(at 94% 36%, hsla(221, 45%, 89%, 1) 0px, transparent 50%),
+		radial-gradient(at 57% 83%, hsla(216, 53%, 73%, 1) 0px, transparent 50%);
+}

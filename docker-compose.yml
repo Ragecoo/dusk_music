@@ -1,0 +1,36 @@
+volumes:
+  pg_dusk:
+
+services:
+  dusk_db:
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+    volumes:
+      - pg_dusk:/var/lib/postgresql/data
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+
+  app:
+    depends_on:
+      - dusk_db
+
+    build: .
+
+    restart: always
+
+    ports:
+      - "8080:8080"
+
+    env_file:
+      - .env
+
+

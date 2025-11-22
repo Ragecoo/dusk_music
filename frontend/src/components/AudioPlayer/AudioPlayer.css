@@ -1,0 +1,185 @@
+#audioPlayer {
+	--inner-padding: 18px;
+	width: 100%;
+	height: 100%;
+	background-color: var(--color-light-transparent);
+	border-radius: var(--radius-m);
+	padding: var(--inner-padding);
+	display: flex;
+	color: var(--color-accent-darker);
+	& audio {
+		display: none;
+	}
+}
+
+.audioPlayerPartLeft {
+	width: 25%;
+	display: flex;
+	align-items: center;
+	gap: var(--inner-padding);
+	& .audioPlayerAlbum {
+		height: 100%;
+		aspect-ratio: 1/1;
+	}
+	& .audioPlayerTrackName {
+		font-size: var(--fs-l);
+		font-weight: var(--fw-bold);
+		margin-bottom: 2px;
+		line-height: 1.14em;
+	}
+	& .audioPlayerTrackArtist {
+		font-size: var(--fs-m);
+		font-weight: var(--fw-normal);
+		color: var(--color-accent-darker-ghost);
+		line-height: 1.14em;
+	}
+}
+.audioPlayerPartMid {
+	width: 50%;
+	flex-grow: 2;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	& .audioPlayerControls {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		gap: 4px;
+	}
+	& .audioPlayerPrbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 24px;
+		& .prbarTime,
+		& .prbarDuration {
+			width: 15%;
+			text-align: center;
+			color: var(--color-accent-darker);
+			font-weight: var(--fw-normal);
+			font-size: var(--fs-m);
+		}
+	}
+}
+.audioPlayerPartRight {
+	width: 25%;
+	display: flex;
+	align-items: center;
+	flex-grow: 1;
+}
+
+.prbar {
+	--bar-height: 6px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	position: relative;
+	z-index: 10;
+	#progressBar {
+		background-color: var(--color-accent-darker-transparent);
+		height: var(--bar-height);
+		width: 100%;
+		border-radius: calc(var(--bar-height) / 2);
+		padding: 0;
+	}
+	#progressBarLabel {
+		position: absolute;
+		width: 100%;
+		height: 150%;
+		top: 0;
+		left: 0;
+		transform: translateY(-15%);
+		z-index: 15;
+		user-select: none;
+	}
+	#progressBarFill {
+		background-color: var(--color-accent-dark);
+		height: 100%;
+		width: 100%;
+		border-radius: 3px;
+		position: relative;
+		&::after {
+			content: '';
+			position: absolute;
+			display: block;
+			width: 12px;
+			height: 12px;
+			border-radius: 6px;
+			right: 0px;
+			top: 0;
+			background-color: var(--color-accent-dark);
+			transform: translate(50%, -3px);
+			user-select: none;
+			pointer-events: none;
+		}
+	}
+}
+
+.audioPlayerControls {
+	& svg {
+		transform: translateY(2px);
+		fill: var(--color-accent-dark);
+		stroke: var(--color-accent-dark);
+	}
+	& .audioPlayerInput {
+		aspect-ratio: 1/1;
+		margin: 8px;
+		background-color: transparent;
+		outline: none;
+		border: none;
+		border-radius: 50%;
+		transition: all 0.3s ease-in-out;
+		cursor: pointer;
+		&.inputPlay {
+			transform: scale(1.5);
+		}
+	}
+}
+
+.audioPlayerVolume {
+	position: relative;
+}
+
+.volumeBarLabel {
+	position: absolute;
+	height: 100px;
+	width: 6px;
+	background-color: #cbd5e1;
+	border-radius: 5px;
+	cursor: pointer;
+	display: flex;
+	align-items: flex-end;
+	bottom: 100%;
+}
+.volumeBar {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border-radius: 5px;
+	overflow: hidden;
+}
+.volumeBarFill {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background-color: #0f172a;
+	border-radius: 5px;
+	user-select: none;
+	&::after {
+		content: '';
+		position: absolute;
+		display: block;
+		width: 12px;
+		height: 12px;
+		border-radius: 6px;
+		right: 0px;
+		top: 0;
+		background-color: var(--color-accent-dark);
+		transform: translate(50%, -3px);
+		user-select: none;
+		pointer-events: none;
+	}
+}
