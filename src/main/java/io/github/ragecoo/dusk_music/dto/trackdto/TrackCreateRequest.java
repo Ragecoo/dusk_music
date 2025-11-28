@@ -3,7 +3,6 @@ package io.github.ragecoo.dusk_music.dto.trackdto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -25,7 +24,7 @@ public class TrackCreateRequest {
     @NotNull
     private String audioUrl;
 
-    @NotNull
+    // Опционально: если не указано, будет использована обложка альбома
     private String coverUrl;
 
     //если что вернусь

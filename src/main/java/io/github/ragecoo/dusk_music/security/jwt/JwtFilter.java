@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +24,7 @@ import java.util.List;
 
 
 /** Класс отвечающий за перехватывание http запросов и подтверждение авторизации пользователя  */
+@Slf4j
 @Component
 @AllArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -42,15 +44,30 @@ public class JwtFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-
+        String requestPath = request.getRequestURI();
+        String method = request.getMethod();
+        
+        log.debug("=== JWT Filter processing request ===");
+        log.debug("Request path: {} {}", method, requestPath);
+        
         String token= getTokenFromRequest(request);
-        if(token != null && jwtService.validateJwtToken(token)){
-            setCustomUserDetailsToSecurityContextHolder(request,token);
+        
+        if(token != null) {
+            log.debug("Token found in request (length: {})", token.length());
+            boolean isValid = jwtService.validateJwtToken(token);
+            log.debug("Token validation result: {}", isValid);
+            
+            if(isValid){
+                log.debug("Token is valid, setting authentication context");
+                setCustomUserDetailsToSecurityContextHolder(request,token);
+            } else {
+                log.warn("Token is invalid for request: {} {}", method, requestPath);
+            }
+        } else {
+            log.debug("No token found in request: {} {}", method, requestPath);
         }
 
         filterChain.doFilter(request,response);
-
-
     }
 
     /** Метод отвечающий за создание объекта аутентификации и достает из токена информацию о пользователе
@@ -62,10 +79,13 @@ public class JwtFilter extends OncePerRequestFilter {
      * @see JwtService#getRoleFromToken(String)
      */
     private void setCustomUserDetailsToSecurityContextHolder(HttpServletRequest request,String token) {
-
+        log.debug("Setting user details from token...");
+        
         Long userId= jwtService.getUserIdFromToken(token);
         String username= jwtService.getUsernameFromToken(token);
         Role role= jwtService.getRoleFromToken(token);
+        
+        log.debug("Extracted from token - userId: {}, username: {}, role: {}", userId, username, role);
 
         var authorities= List.of(new SimpleGrantedAuthority("ROLE_"+role.name()));
         var principal= new AuthUser(userId,username,authorities);
@@ -74,7 +94,7 @@ public class JwtFilter extends OncePerRequestFilter {
         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(auth);
-
+        log.debug("Authentication context set successfully");
     }
 
     /** Метод отвечающий за получения токена из HTTP запроса
@@ -82,9 +102,14 @@ public class JwtFilter extends OncePerRequestFilter {
      * @return Возвращает строку с токеном из запроса*/
     private String getTokenFromRequest(HttpServletRequest request){
         String bearerToken= request.getHeader(HttpHeaders.AUTHORIZATION);
+        log.debug("Authorization header: {}", bearerToken != null ? (bearerToken.length() > 20 ? bearerToken.substring(0, 20) + "..." : bearerToken) : "null");
+        
         if(bearerToken!=null && bearerToken.startsWith("Bearer ")){
-            return bearerToken.substring(7);
+            String token = bearerToken.substring(7);
+            log.debug("Extracted token (length: {})", token.length());
+            return token;
         }
+        log.debug("No valid Bearer token found");
         return null;
     }
 }

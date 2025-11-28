@@ -5,7 +5,6 @@ import io.github.ragecoo.dusk_music.dto.artistdto.ArtistRef;
 import io.github.ragecoo.dusk_music.dto.genredto.GenreRef;
 import io.github.ragecoo.dusk_music.dto.trackdto.TrackCreateRequest;
 import io.github.ragecoo.dusk_music.dto.trackdto.TrackResponse;
-import io.github.ragecoo.dusk_music.dto.trackdto.TrackShortResponse;
 import io.github.ragecoo.dusk_music.dto.trackdto.TrackUpdateRequest;
 import io.github.ragecoo.dusk_music.exceptions.NotFoundException;
 import io.github.ragecoo.dusk_music.mapper.AlbumMapper;
@@ -64,6 +63,17 @@ public class TrackServiceImpl implements TrackService {
 
         Track track = trackMapper.toEntity(request, album, artist, genre);
         
+        // Автоматически устанавливаем обложку трека из альбома, если она не указана в запросе
+        if (track.getCoverUrl() == null || track.getCoverUrl().isEmpty()) {
+            // Используем обложку альбома, если она есть
+            if (album.getPhotoUrl() != null && !album.getPhotoUrl().isEmpty()) {
+                track.setCoverUrl(album.getPhotoUrl());
+            } else {
+                // Если у альбома нет обложки, нужно указать её в запросе
+                throw new IllegalArgumentException("Cover URL is required. Either provide coverUrl in request or ensure album has a photoUrl");
+            }
+        }
+        
         // Извлекаем длительность из MP3 файла
         Integer duration = audioDurationExtractor.extractDuration(request.getAudioUrl());
         if (duration != null && duration > 0) {
@@ -118,6 +128,10 @@ public class TrackServiceImpl implements TrackService {
             Album album = albumRepository.findById(request.getAlbumId())
                     .orElseThrow(() -> new NotFoundException("Album not found"));
             track.setAlbum(album);
+            // При изменении альбома автоматически обновляем обложку трека из альбома
+            if (album.getPhotoUrl() != null && !album.getPhotoUrl().isEmpty()) {
+                track.setCoverUrl(album.getPhotoUrl());
+            }
         }
         if (request.getGenreId() != null) {
             Genre genre = genreRepository.findById(request.getGenreId())
@@ -140,63 +154,63 @@ public class TrackServiceImpl implements TrackService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrackShortResponse> listByArtist(Long artistId, Pageable pageable) {
+    public Page<TrackResponse> listByArtist(Long artistId, Pageable pageable) {
         if (!artistRepository.existsById(artistId)) {
             throw new NotFoundException("Artist not found");
         }
 
         Page<Track> tracks = trackRepository.findByArtistId(artistId, pageable);
-        return tracks.map(this::toShortResponse);
+        return tracks.map(this::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrackShortResponse> listByAlbum(Long albumId, Pageable pageable) {
+    public Page<TrackResponse> listByAlbum(Long albumId, Pageable pageable) {
         if (!albumRepository.existsById(albumId)) {
             throw new NotFoundException("Album not found");
         }
 
         Page<Track> tracks = trackRepository.findByAlbumId(albumId, pageable);
-        return tracks.map(this::toShortResponse);
+        return tracks.map(this::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrackShortResponse> listByGenre(Long genreId, Pageable pageable) {
+    public Page<TrackResponse> listByGenre(Long genreId, Pageable pageable) {
         if (!genreRepository.existsById(genreId)) {
             throw new NotFoundException("Genre not found");
         }
 
         Page<Track> tracks = trackRepository.findByGenreId(genreId, pageable);
-        return tracks.map(this::toShortResponse);
+        return tracks.map(this::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrackShortResponse> listAll(Pageable pageable) {
+    public Page<TrackResponse> listAll(Pageable pageable) {
         Page<Track> tracks = trackRepository.findAll(pageable);
-        return tracks.map(this::toShortResponse);
+        return tracks.map(this::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrackShortResponse> listPopular(Pageable pageable) {
+    public Page<TrackResponse> listPopular(Pageable pageable) {
         Page<Track> tracks = trackRepository.findAllByOrderByPlayCountDesc(pageable);
-        return tracks.map(this::toShortResponse);
+        return tracks.map(this::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrackShortResponse> listRecent(Pageable pageable) {
+    public Page<TrackResponse> listRecent(Pageable pageable) {
         Page<Track> tracks = trackRepository.findAllByOrderByReleaseDateDesc(pageable);
-        return tracks.map(this::toShortResponse);
+        return tracks.map(this::toResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TrackShortResponse> searchByTitle(String title, Pageable pageable) {
+    public Page<TrackResponse> searchByTitle(String title, Pageable pageable) {
         Page<Track> tracks = trackRepository.findByTitleContainingIgnoreCase(title, pageable);
-        return tracks.map(this::toShortResponse);
+        return tracks.map(this::toResponse);
     }
 
     @Override
@@ -221,18 +235,52 @@ public class TrackServiceImpl implements TrackService {
                 ? genreMapper.toRef(track.getGenre()) 
                 : null;
 
-        return trackMapper.toResponse(track, artistRef, albumRef, genreRef);
+        // Преобразуем локальные пути в URL для API
+        String audioUrl = convertToApiUrl(track.getAudioUrl());
+        String coverUrl = convertToApiUrl(track.getCoverUrl());
+
+        return new TrackResponse(
+                track.getId(),
+                track.getTitle(),
+                track.getDuration(),
+                audioUrl,
+                coverUrl,
+                track.getPlayCount(),
+                track.getReleaseDate(),
+                artistRef,
+                albumRef,
+                genreRef
+        );
     }
 
-    private TrackShortResponse toShortResponse(Track track) {
-        TrackShortResponse response = new TrackShortResponse();
-        response.setId(track.getId());
-        response.setTitle(track.getTitle());
-        response.setDurationSec(track.getDuration());
-        response.setPlayCount(track.getPlayCount());
-        response.setAlbumTitle(track.getAlbum() != null ? track.getAlbum().getTitle() : null);
-        response.setArtistName(track.getArtist() != null ? track.getArtist().getArtistName() : null);
-        return response;
+    /**
+     * Преобразует локальный путь в URL для API
+     * Если путь уже является HTTP/HTTPS URL, возвращает как есть
+     * Если путь начинается с audio/ или covers/, преобразует в /api/v1/files/...
+     */
+    private String convertToApiUrl(String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+        
+        // Если уже HTTP/HTTPS URL, возвращаем как есть
+        if (path.startsWith("http://") || path.startsWith("https://")) {
+            return path;
+        }
+        
+        // Если путь начинается с audio/ или covers/, преобразуем в URL API
+        if (path.startsWith("audio/")) {
+            return "/api/v1/files/" + path;
+        }
+        
+        if (path.startsWith("covers/")) {
+            return "/api/v1/files/" + path;
+        }
+        
+        // Если это локальный путь без префикса, пытаемся определить тип
+        // Для обратной совместимости возвращаем как есть
+        return path;
     }
+
 }
 

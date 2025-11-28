@@ -14,12 +14,16 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 @Component
 public class AudioDurationExtractor {
 
     private static final Logger logger = LoggerFactory.getLogger(AudioDurationExtractor.class);
+    
+    private static final String DEFAULT_AUDIO_DIR = "uploads/audio";
+    private static final String DEFAULT_COVER_DIR = "uploads/covers";
 
     /**
      * Извлекает длительность аудиофайла в секундах
@@ -116,7 +120,34 @@ public class AudioDurationExtractor {
             return downloadTemporaryFile(audioUrl);
         }
         
-        // Если это локальный путь к файлу
+        // Если путь начинается с "audio/" или "covers/", ищем в соответствующих директориях
+        if (audioUrl.startsWith("audio/")) {
+            String fileName = audioUrl.substring("audio/".length());
+            Path audioPath = Paths.get(DEFAULT_AUDIO_DIR, fileName).toAbsolutePath().normalize();
+            if (Files.exists(audioPath)) {
+                return audioPath.toFile();
+            }
+            // Также пробуем относительный путь
+            audioPath = Paths.get(DEFAULT_AUDIO_DIR, fileName).normalize();
+            if (Files.exists(audioPath)) {
+                return audioPath.toFile();
+            }
+        }
+        
+        if (audioUrl.startsWith("covers/")) {
+            String fileName = audioUrl.substring("covers/".length());
+            Path coverPath = Paths.get(DEFAULT_COVER_DIR, fileName).toAbsolutePath().normalize();
+            if (Files.exists(coverPath)) {
+                return coverPath.toFile();
+            }
+            // Также пробуем относительный путь
+            coverPath = Paths.get(DEFAULT_COVER_DIR, fileName).normalize();
+            if (Files.exists(coverPath)) {
+                return coverPath.toFile();
+            }
+        }
+        
+        // Если это локальный путь к файлу (абсолютный)
         File file = new File(audioUrl);
         if (file.exists()) {
             return file;

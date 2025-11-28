@@ -22,7 +22,10 @@ public class TrackMapper {
         track.setAlbum(album);
         track.setArtist(artist);
         track.setAudioUrl(request.getAudioUrl());
-        track.setCoverUrl(request.getCoverUrl());
+        // coverUrl устанавливается в сервисе из альбома, если не указан в запросе
+        if (request.getCoverUrl() != null && !request.getCoverUrl().isEmpty()) {
+            track.setCoverUrl(request.getCoverUrl());
+        }
         track.setReleaseDate(request.getReleaseDate());
 
         return track;

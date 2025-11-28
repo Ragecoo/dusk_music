@@ -13,6 +13,10 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /opt/app
 EXPOSE 8080
 
+# Создаем директории для хранения файлов
+RUN mkdir -p /opt/app/uploads/audio /opt/app/uploads/covers && \
+    chmod -R 755 /opt/app/uploads
+
 COPY --from=builder /opt/app/target/app.jar /opt/app/app.jar
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /opt/app/app.jar"]
 

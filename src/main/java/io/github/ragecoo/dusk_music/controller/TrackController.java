@@ -2,13 +2,13 @@ package io.github.ragecoo.dusk_music.controller;
 
 import io.github.ragecoo.dusk_music.dto.trackdto.TrackCreateRequest;
 import io.github.ragecoo.dusk_music.dto.trackdto.TrackResponse;
-import io.github.ragecoo.dusk_music.dto.trackdto.TrackShortResponse;
 import io.github.ragecoo.dusk_music.dto.trackdto.TrackUpdateRequest;
 import io.github.ragecoo.dusk_music.service.TrackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/tracks")
@@ -33,69 +34,78 @@ public class TrackController {
 
     @GetMapping
     @Operation(summary = "Получить список всех треков")
-    public ResponseEntity<Page<TrackShortResponse>> listAll(
+    public ResponseEntity<Page<TrackResponse>> listAll(
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<TrackShortResponse> tracks = trackService.listAll(pageable);
+        Page<TrackResponse> tracks = trackService.listAll(pageable);
         return ResponseEntity.ok(tracks);
     }
 
     @GetMapping("/popular")
     @Operation(summary = "Получить популярные треки")
-    public ResponseEntity<Page<TrackShortResponse>> listPopular(
+    public ResponseEntity<Page<TrackResponse>> listPopular(
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<TrackShortResponse> tracks = trackService.listPopular(pageable);
+        Page<TrackResponse> tracks = trackService.listPopular(pageable);
         return ResponseEntity.ok(tracks);
     }
 
     @GetMapping("/recent")
     @Operation(summary = "Получить недавние треки")
-    public ResponseEntity<Page<TrackShortResponse>> listRecent(
+    public ResponseEntity<Page<TrackResponse>> listRecent(
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<TrackShortResponse> tracks = trackService.listRecent(pageable);
+        Page<TrackResponse> tracks = trackService.listRecent(pageable);
         return ResponseEntity.ok(tracks);
     }
 
     @GetMapping("/search")
     @Operation(summary = "Поиск треков по названию")
-    public ResponseEntity<Page<TrackShortResponse>> search(
+    public ResponseEntity<Page<TrackResponse>> search(
             @RequestParam String title,
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<TrackShortResponse> tracks = trackService.searchByTitle(title, pageable);
+        Page<TrackResponse> tracks = trackService.searchByTitle(title, pageable);
         return ResponseEntity.ok(tracks);
     }
 
     @GetMapping("/artist/{artistId}")
     @Operation(summary = "Получить треки артиста")
-    public ResponseEntity<Page<TrackShortResponse>> listByArtist(
+    public ResponseEntity<Page<TrackResponse>> listByArtist(
             @PathVariable Long artistId,
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<TrackShortResponse> tracks = trackService.listByArtist(artistId, pageable);
+        Page<TrackResponse> tracks = trackService.listByArtist(artistId, pageable);
         return ResponseEntity.ok(tracks);
     }
 
     @GetMapping("/album/{albumId}")
     @Operation(summary = "Получить треки альбома")
-    public ResponseEntity<Page<TrackShortResponse>> listByAlbum(
+    public ResponseEntity<Page<TrackResponse>> listByAlbum(
             @PathVariable Long albumId,
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<TrackShortResponse> tracks = trackService.listByAlbum(albumId, pageable);
+        Page<TrackResponse> tracks = trackService.listByAlbum(albumId, pageable);
         return ResponseEntity.ok(tracks);
     }
 
     @GetMapping("/genre/{genreId}")
     @Operation(summary = "Получить треки жанра")
-    public ResponseEntity<Page<TrackShortResponse>> listByGenre(
+    public ResponseEntity<Page<TrackResponse>> listByGenre(
             @PathVariable Long genreId,
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<TrackShortResponse> tracks = trackService.listByGenre(genreId, pageable);
+        Page<TrackResponse> tracks = trackService.listByGenre(genreId, pageable);
         return ResponseEntity.ok(tracks);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Получить трек по ID")
     public ResponseEntity<TrackResponse> get(@PathVariable Long id) {
-        TrackResponse response = trackService.get(id);
-        return ResponseEntity.ok(response);
+        log.info("=== Get track request ===");
+        log.info("Track ID: {}", id);
+        try {
+            TrackResponse response = trackService.get(id);
+            log.info("Track found: id={}, title={}, audioUrl={}", 
+                    response.id(), response.title(), response.audioUrl());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error getting track with id {}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PutMapping("/{id}")

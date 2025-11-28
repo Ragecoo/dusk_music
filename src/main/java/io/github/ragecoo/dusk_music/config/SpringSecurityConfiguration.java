@@ -54,8 +54,8 @@ public class SpringSecurityConfiguration {
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setExposedHeaders(List.of("*"));
-        //dev
-        cfg.setAllowCredentials(false);
+        // Для поддержки авторизации в браузере
+        cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source= new UrlBasedCorsConfigurationSource();
@@ -82,6 +82,8 @@ public class SpringSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Разрешаем доступ к файлам без авторизации (можно добавить проверку позже)
+                        .requestMatchers("/files/**", "/uploads/**", "/api/v1/files/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

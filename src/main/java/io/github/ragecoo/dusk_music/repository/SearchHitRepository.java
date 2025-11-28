@@ -17,7 +17,7 @@ public interface SearchHitRepository extends JpaRepository<Track, Long> {
                  t.id     AS id,
                  t.title  AS name,
                  COALESCE(a.artist_name, '') || COALESCE(' · ' || al.title, '') AS subtitle,
-                 t.cover_url AS coverUrl
+                 COALESCE(al.photo_url, t.cover_url) AS coverUrl
           FROM tracks t
           LEFT JOIN artists a ON t.artist_id = a.id
           LEFT JOIN albums  al ON t.album_id  = al.id

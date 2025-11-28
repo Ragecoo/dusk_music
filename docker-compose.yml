@@ -1,5 +1,6 @@
 volumes:
   pg_dusk:
+  app_uploads:
 
 services:
   dusk_db:
@@ -32,5 +33,10 @@ services:
 
     env_file:
       - .env
+
+    volumes:
+      # Монтируем локальную директорию uploads в контейнер
+      # Это позволяет использовать файлы, которые уже есть в проекте
+      - ./uploads:/opt/app/uploads
 
 

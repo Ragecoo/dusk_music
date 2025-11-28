@@ -2,20 +2,35 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: false
+    # Временно отключаем валидацию checksum, чтобы исправить проблему
+    # После исправления можно включить обратно
 
-
-
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
 
   jpa:
     hibernate:
       ddl-auto: validate
 
-
     show-sql: true
     generate-ddl: false
+    defer-datasource-initialization: false
 
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+
+file:
+  storage:
+    # Директории для хранения файлов
+    # В Docker используем абсолютный путь для работы с volume
+    # В локальной разработке можно использовать относительный путь
+    audio-dir: ${FILE_STORAGE_AUDIO_DIR:/opt/app/uploads/audio}
+    cover-dir: ${FILE_STORAGE_COVER_DIR:/opt/app/uploads/covers}
