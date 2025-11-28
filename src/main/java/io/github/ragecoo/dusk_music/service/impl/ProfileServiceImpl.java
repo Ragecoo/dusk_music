@@ -7,6 +7,7 @@ import io.github.ragecoo.dusk_music.mapper.UserMapper;
 import io.github.ragecoo.dusk_music.model.User;
 import io.github.ragecoo.dusk_music.repository.RefreshTokenRepository;
 import io.github.ragecoo.dusk_music.repository.UserRepository;
+import io.github.ragecoo.dusk_music.service.FileStorageService;
 import io.github.ragecoo.dusk_music.service.ProfileService;
 import lombok.AllArgsConstructor;
 import org.flywaydb.core.internal.util.StringUtils;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @AllArgsConstructor
@@ -23,6 +25,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -78,6 +81,42 @@ public class ProfileServiceImpl implements ProfileService {
         response.setCreatedAt(u.getCreatedAt());
 
         return response;
+    }
+
+    @Override
+    @Transactional
+    public ProfileResponse uploadAvatar(Long userId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        if (!file.getContentType().startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        try {
+            // Сохраняем файл как cover (используем covers для аватаров)
+            String filePath = fileStorageService.saveCoverFile(file);
+            
+            // Обновляем аватар пользователя
+            u.setAvatarUrl(filePath);
+            userRepository.save(u);
+
+            ProfileResponse response = new ProfileResponse();
+            response.setId(u.getId());
+            response.setUsername(u.getUsername());
+            response.setEmail(u.getEmail());
+            response.setAvatarUrl(u.getAvatarUrl());
+            response.setSubscriptionStatus(u.isSubActive());
+            response.setCreatedAt(u.getCreatedAt());
+
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload avatar: " + e.getMessage(), e);
+        }
     }
 
     @Override

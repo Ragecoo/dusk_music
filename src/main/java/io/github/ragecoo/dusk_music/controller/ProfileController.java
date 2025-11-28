@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,6 +51,14 @@ public class ProfileController {
         Long userId = getCurrentUserId();
         profileService.changePassword(userId, request);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/avatar")
+    @Operation(summary = "Загрузить аватар пользователя")
+    public ResponseEntity<ProfileResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        Long userId = getCurrentUserId();
+        ProfileResponse response = profileService.uploadAvatar(userId, file);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout-all")
